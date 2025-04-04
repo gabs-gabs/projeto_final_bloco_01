@@ -1,17 +1,16 @@
 import java.math.BigDecimal;
 import java.util.Scanner;
+import controller.LivroController;
 import model.Livro;
-import repository.LivroRepository;
 
-public class Menu implements LivroRepository {
+public class Menu {
     public static void main(String[] args) {
         Scanner sc = new Scanner(System.in);
+        LivroController livroController = new LivroController();
         int option, stock;
         String bookName, author, description;
         BigDecimal price;
         boolean proceed = true;
-
-        Menu menu = new Menu();
 
         while (proceed) {
             System.out.println("*****************************************************");
@@ -48,12 +47,12 @@ public class Menu implements LivroRepository {
                     System.out.println("Digite o estoque do livro:");
                     stock = sc.nextInt();
                     Livro livro = new Livro(stock, bookName, author, description, price);
-                    menu.addLivro(livro);
+                    livroController.addLivro(livro);
                     break;
 
                 case 2:
                     System.out.println("Listar todos os livros:");
-                    for (Livro l : menu.listLivros()) {
+                    for (Livro l : livroController.listLivros()) {
                         l.displayDetails();
                     }
                     break;
@@ -63,9 +62,11 @@ public class Menu implements LivroRepository {
                     sc.skip("\\R?");
                     System.out.println("Digite o nome do livro:");
                     bookName = sc.nextLine();
-                    Livro foundLivro = menu.findLivroByName(bookName);
-                    if (foundLivro != null) {
+                    try {
+                        Livro foundLivro = livroController.findLivroByName(bookName);
                         foundLivro.displayDetails();
+                    } catch (RuntimeException e) {
+                        System.out.println(e.getMessage());
                     }
                     break;
 
@@ -74,8 +75,7 @@ public class Menu implements LivroRepository {
                     sc.skip("\\R?");
                     System.out.println("Digite o nome do livro a ser atualizado:");
                     bookName = sc.nextLine();
-                    Livro livroParaAtualizar = menu.findLivroByName(bookName);
-                    if (livroParaAtualizar != null) {
+                    try {
                         System.out.println("Digite o novo autor do livro:");
                         author = sc.nextLine();
                         System.out.println("Digite a nova descrição do livro:");
@@ -84,11 +84,10 @@ public class Menu implements LivroRepository {
                         price = sc.nextBigDecimal();
                         System.out.println("Digite o novo estoque do livro:");
                         stock = sc.nextInt();
-                        livroParaAtualizar.setAuthor(author);
-                        livroParaAtualizar.setDescription(description);
-                        livroParaAtualizar.setPrice(price);
-                        livroParaAtualizar.setStock(stock);
-                        menu.updateLivro(livroParaAtualizar);
+                        Livro livroAtualizado = new Livro(stock, bookName, author, description, price);
+                        livroController.updateLivro(bookName, livroAtualizado);
+                    } catch (RuntimeException e) {
+                        System.out.println(e.getMessage());
                     }
                     break;
 
@@ -97,7 +96,11 @@ public class Menu implements LivroRepository {
                     sc.skip("\\R?");
                     System.out.println("Digite o nome do livro a ser removido:");
                     bookName = sc.nextLine();
-                    menu.removeLivro(bookName);
+                    try {
+                        livroController.removeLivro(bookName);
+                    } catch (RuntimeException e) {
+                        System.out.println(e.getMessage());
+                    }
                     break;
 
                 default:
